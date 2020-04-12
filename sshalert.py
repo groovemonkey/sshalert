@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 
 import logging
-import os
-from datetime import datetime
+# from systemd.journal import JournalHandler
+import os, time
+import subprocess, select
 import nexmo
+
+# Initialization
+log = logging.getLogger('sshalert')
+#log.addHandler(JournalHandler())
+log.setLevel(logging.INFO)
 
 try:
     source_phone_number = os.getenv("SOURCE_PHONE_NUMBER")
@@ -14,16 +20,59 @@ except:
     logging.critical("ERROR: Have you exported all required environment variables? (TARGET_PHONE_NUMBER, NEXMO_KEY, NEXMO_SECRET)")
 
 # Initialize the nexmo client
-client = nexmo.Client(key=nexmo_key, secret=nexmo_secret)
+nexmo_client = nexmo.Client(key=nexmo_key, secret=nexmo_secret)
 
-# Send a message
-response = client.send_message({
-    'from': source_phone_number,
-    'to': target_phone_number,
-    'text': 'Hello from sshalert',
-})
 
-if response['messages'][0]['status'] != '0':
-    logging.error("ERROR: failed to send message: {0}".format(response['messages'][0]['error-text']))
-else:
-    logging.info("Successfully sent text message at {0}".format(datetime.utcnow()))
+def poll_logfile(filename):
+    """
+    Polls a logfile for sudo commands or ssh logins.
+    """
+    f = subprocess.Popen(["tail", "-f", "-n", "0", filename], encoding="utf8", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = select.poll()
+    p.register(f.stdout)
+
+    while True:
+        if p.poll(1):
+            process_log_entry(f.stdout.readline())
+        time.sleep(1)
+
+
+def process_log_entry(logline):
+    """
+    Check a logline and see if it matches the content we care about.
+    """
+    # If it's a local sudo exec
+    if "sudo" and "COMMAND" in logline:
+        send_sms(logline)
+    
+    # If it's an SSH login
+    elif "ssh" and "Accepted" in logline:
+        send_sms(logline)
+    return
+
+
+def send_sms(msg):
+    """
+    Sends a text message to the target phone number, via nexmo.
+    Returns 0 if everything worked; otherwise 1
+    """
+    # Send a message
+    response = nexmo_client.send_message({
+        'from': source_phone_number,
+        'to': target_phone_number,
+        'text': msg,
+    })
+
+    # Error handling
+    if response['messages'][0]['status'] != '0':
+        logging.error("ERROR: failed to send message: {0}".format(response['messages'][0]['error-text']))
+        return 1
+    else:
+        logging.info("Successfully sent text message.")
+        return 0
+
+
+# If this program was called directly (as opposed to imported)
+if __name__ == "__main__":
+    # poll the auth.log file
+    poll_logfile("/var/log/auth.log")

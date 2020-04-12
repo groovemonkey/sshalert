@@ -1,0 +1,11 @@
+[Unit]
+Description=Tutorialinux sshalert service - alerts when someone logs in or sudos
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/home/sshalert/sshalert/venv/bin/python3 /home/sshalert/sshalert/sshalert.py
+EnvironmentFile=/home/sshalert/sshalert/secrets.sh
+Restart=always
