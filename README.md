@@ -24,6 +24,7 @@ TARGET_PHONE_NUMBER=yournexmosourcenumber
 
 
 ## Naked Ubuntu 18.04 Server Setup
+```
 sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install virtualenv python3-virtualenv
@@ -33,7 +34,7 @@ sudo apt-get install virtualenv python3-virtualenv
 systemctl daemon-reload
 systemctl start sshalert
 systemctl enable sshalert
-
+```
 
 TODO: add more instructions ;-)
 
