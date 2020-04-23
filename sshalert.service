@@ -7,5 +7,5 @@ WantedBy=multi-user.target
 [Service]
 Type=simple
 ExecStart=/home/sshalert/sshalert/venv/bin/python3 /home/sshalert/sshalert/sshalert.py
-EnvironmentFile=/home/sshalert/sshalert/secrets.sh
+EnvironmentFile=/home/sshalert/sshalert/secrets.env
 Restart=always
