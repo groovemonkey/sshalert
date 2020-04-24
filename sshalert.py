@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 
 import logging
-# from systemd.journal import JournalHandler
 import os, time
 import subprocess, select
 import nexmo
 
 # Initialization
 log = logging.getLogger('sshalert')
-#log.addHandler(JournalHandler())
 log.setLevel(logging.INFO)
 
 try:
@@ -18,6 +16,7 @@ try:
     nexmo_secret = os.getenv("NEXMO_SECRET")
 except:
     logging.critical("ERROR: Have you exported all required environment variables? (TARGET_PHONE_NUMBER, NEXMO_KEY, NEXMO_SECRET)")
+    exit(1)
 
 # Initialize the nexmo client
 nexmo_client = nexmo.Client(key=nexmo_key, secret=nexmo_secret)
@@ -66,10 +65,8 @@ def send_sms(msg):
     # Error handling
     if response['messages'][0]['status'] != '0':
         logging.error("ERROR: failed to send message: {0}".format(response['messages'][0]['error-text']))
-        return 1
     else:
         logging.info("Successfully sent text message.")
-        return 0
 
 
 # If this program was called directly (as opposed to imported)
