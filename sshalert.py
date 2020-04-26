@@ -26,7 +26,7 @@ def poll_logfile(filename):
     """
     Polls a logfile for sudo commands or ssh logins.
     """
-    f = subprocess.Popen(["tail", "-f", "-n", "0", filename], encoding="utf8", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    f = subprocess.Popen(["tail", "-F", "-n", "0", filename], encoding="utf8", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     p = select.poll()
     p.register(f.stdout)
 
