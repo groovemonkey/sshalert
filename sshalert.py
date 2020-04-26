@@ -41,11 +41,11 @@ def process_log_entry(logline):
     Check a logline and see if it matches the content we care about.
     """
     # If it's a local sudo exec
-    if "sudo" and "COMMAND" in logline:
+    if all(x in logline for x in ["sudo", "COMMAND"]:
         send_sms(logline)
     
     # If it's an SSH login
-    elif "ssh" and "Accepted" in logline:
+    elif all(x in logline for x in ["ssh", "Accepted"]:
         send_sms(logline)
     return
 
